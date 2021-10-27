@@ -1,0 +1,267 @@
+{%extends ../../../common/views/layout.html%}
+{%block style%}
+{% set user = usuario %}
+<style>
+    .vista-rapida{
+        width: 40%;
+        background: rgba(244, 244, 244, 1);
+        text-align: center;
+    }
+    .accion{ cursor:pointer }
+
+    .titulo-verde-own{
+        color:  white  !important;
+    }
+
+    .green-own{
+        background-color: #95c11f !important;
+
+    }
+        .title-rg-own{
+        font-weight: bolder !important;
+        color: #044f17 !important;
+    }
+</style>
+
+<script src="resources/js/functions.js"></script>
+ <script src="https://code.jquery.com/jquery-2.2.4.js" integrity="sha256-iT6Q9iMJYuQiMWNd9lDyBUStIq/8PuOW33aOqmvFpqI=" crossorigin="anonymous"></script>
+<!--link href="resources/plugins/lastdatatables/datatables.min.css" rel="stylesheet" type="text/css" /-->
+
+<script>
+    main_route = '/ubicacion'
+
+    function default_values() {
+        page_nr = 1
+        max_entries = 10
+        like_search = ""
+        order_by = ""
+        ascendant = true
+    }
+    default_values()
+</script>
+
+{%end%}
+{%block content%}
+<div class="header">
+    <h2 class="title-rg-own">Mapa de Rastreo</h2>
+</div>
+<div class="body">
+<button id="mandar-btn">Mandar notificacion</button>
+
+    <div class="row">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="card">
+                   
+                    <div class="card-body">
+                        <!--
+                        <div class="form-group">
+                            <label >Latitud : </label>
+                            <input id="latitud" class="form-control " name="latitud"  placeholder="latitud" type="text">
+                        </div>
+
+                        <div class="form-group">
+                            <label >Longitud : </label>
+                            <input id="longitud" class="form-control " name="longitud"  placeholder="longitud" type="text">
+                        </div>
+                         -->
+                        <div style="display: flex;" class="form-group">
+
+                            <div id="googleMap" style="width:100%;height:900px;"></div>
+                            <div class="vista-rapida">
+                                <h4>Vista rápida</h4>
+                                {% for ubicacionL in ubicaciones %}
+                               <a href="https://saetra.saebolivia.com/historial?id={{ubicacionL.fkusuario}}" target="_blank" rel="noopener noreferrer"> <p>{{ubicacionL.nombre_usuario}} {{ubicacionL.bateria}}% </p></a>
+                                {%end %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="body table-responsive">
+                            <table style="text-align: center;" id="data_table" class="table table-bordered table-striped table-hover">
+                                <thead>
+                                    <tr style="background: rgba(247, 173, 12, 1);">
+                                        <th style="text-align: center;" class="order_by_th" data-name="name">Usuario </th>
+                                        <th style="text-align: center;" class="order_by_th" data-name="last_name">Rol </th>
+                                        <th style="text-align: center;" class="order_by_th" data-name="mail">Sucursal </th>
+                                        <th style="text-align: center;" class="order_by_th" data-name="usuarioname">Grupo </th>
+                                        <th style="text-align: center;" class="order_by_th" data-name="condominio">Monitoreo </th>
+                                        <th style="text-align: center;" class="order_by_th" data-name="enabled">Acciones </th>
+                                        <th style="text-align: center;" class="actions_header">Bateria </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table_content">
+                                {% for ubicacionL in ubicaciones %}
+                                <tr>
+                                <td>{{ubicacionL.nombre_usuario}}</td>
+                                <td>Gerente Regional</td>
+                                <td>Todo</td>
+                                <td>TRADE MARKETING SC</td>
+                                <td style="width: 10%;"><input style="width: 35%;" type="text" value="5"></td>
+                                <td><button onclick='window.location.href="https://saetra.saebolivia.com/historial?id={{ubicacionL.fkusuario}}"' id="ver-usuario" type="button" class="btn bg-indigo waves-effect waves-light" title="Editar"><i class="material-icons blanco">search</i></button></td>
+                                <td>{{ubicacionL.bateria}}</td>
+                            </tr>
+                                {%end %}
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+
+                </div>
+                
+        </div>
+    </div>
+    <div class="col-xs-9 col-sm-10 col-md-10 col-lg-10"></div>
+</div>
+{%end%}
+{% block script %}
+<script src="resources/plugins/momentjs/moment.js"></script>
+<script src="resources/plugins/momentjs/locale/es.js"></script>
+<script src="resources/plugins/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
+<!--script src="resources/plugins/lastdatatables/datatables.min.js" type="text/javascript"></script-->
+ <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAD_uDDi0TSvBwIvihAJeyK-N543hMDBKg&callback=myMap"></script>
+          <script>
+            //debugger
+            var  lat;
+            var long;
+                //Click al boton para pedir permisos
+            $("#pedirvan")
+                //Si el navegador soporta geolocalizacion
+                if (!!navigator.geolocation) {
+                    //debugger
+                    //Pedimos los datos de geolocalizacion al navegador
+                    navigator.geolocation.getCurrentPosition(
+                            //Si el navegador entrega los datos de geolocalizacion los imprimimos
+                            function (position) {
+                                //window.alert("permitir el uso de tu ubicacion");
+                                $('#latitud').val(position.coords.latitude);
+                                $('#longitud').val(position.coords.longitude);
+                                lat = position.coords.latitude
+                                long = position.coords.longitude
+                                 var mapOptions= {
+                                  center:new google.maps.LatLng( lat ,long),
+                                  zoom:15,
+                                  mapTypeId: google.maps.MapTypeId.ROADMAP,
+                                  };
+                                  
+                              
+                                  latlng = new google.maps.LatLng(lat,long);
+                                  var mapCanvas=document.getElementById("googleMap");
+                                  var map = new google.maps.Map(mapCanvas, mapOptions);
+                                  //placeMarker(map, latlng);
+                                  const iconBase = "https://maps.google.com/mapfiles/kml/shapes/";
+                                  const icons = {
+                                    library: {
+                                        name: "Library",
+                                        icon: iconBase + "library_maps.png",
+                                        },
+                                  };
+                                 
+
+                                  const features = [
+                                  {% for ubicacion in ubicaciones %}
+                                  {
+                                        position: new google.maps.LatLng({{ubicacion.longitud}},{{ubicacion.latitud}}),
+                                        type: "library",
+                                  },
+                                  {% end %}
+                                       
+                                   ];
+                                  features.forEach((feature) => {
+                                      debugger
+                                        new google.maps.Marker({
+                                        position: feature.position,
+                                        icon: icons[feature.type].icon,
+                                        map: map,
+                                        });
+                                    });
+                                  /*google.maps.event.addListener(map, 'click', function(event) {
+                                      debugger
+                                      placeMarker(map, event.latLng);
+                                  });*/
+
+                            },
+                            //Si no los entrega manda un alerta de error
+                            function () {
+                                //window.alert("nav no permitido");
+                            }
+                    );
+                };
+
+
+              function placeMarker(map,location) {
+                  debugger
+                  deleteMarkers();
+                  // setMapOnAll(null);
+                  var marker = new google.maps.Marker({
+                      position:location,
+                      map: map,
+                      title: "mi ubicacion",
+                  });
+
+                  $('#latitud').val(location.lat());
+                  $('#longitud').val(location.lng());
+                  debugger
+                  var infowindow = new google.maps.InfoWindow({
+                      content: 'Latitude: ' + location.lat() + '<br>Longitude: ' + location.lng()
+                  });
+                  infowindow.open(map,marker);
+                  markers.push(marker);
+              }
+
+
+              function deleteMarkers() {
+                  for (var i = 0; i < markers.length; i++) {
+                      markers[i].setMap(null);
+                      markers.splice(i, 1);
+                  }
+              }
+
+          </script>
+
+<script>
+    var markers = [];
+ function myMap() {
+     }
+</script>
+<script>
+    $('#mandar-btn').click(function () {
+        objeto = JSON.stringify({
+                'nombre':"nando",
+                });
+        ruta='/api/mandar_notificacion'
+        $.ajax({
+                    url: ruta,
+                    type: "post",
+                    data: {_xsrf: getCookie("_xsrf"), object: objeto},
+                    async: true,
+                }).done(function (response) {
+                response=JSON.parse(response);
+             
+            })
+        });
+    
+    </script>
+    <script>
+            $('#data_table').DataTable({
+            deferRender:    true,
+            scrollCollapse: true,
+            scroller:       true,
+
+            dom: "Bfrtip" ,
+            buttons: [
+            ],
+            initComplete: function () {
+                $("#rgm-loader").fadeOut('800');
+
+            },
+            "order": [[ 1, "desc" ]],
+            language : {
+                'url': '/resources/js/spanish.json',
+            },
+            "pageLength": 50
+        });
+    </script>
+
+{% end %}

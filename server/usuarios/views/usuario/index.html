@@ -1,0 +1,523 @@
+{%extends ../../../common/views/layout.html%}
+{%block style%}
+{% set user = usuario %}
+<style>
+    .accion{ cursor:pointer }
+    .error-own{
+        display: block !important;
+        height: 0px !important;
+        padding: 0px !important;
+        margin: 0px !important;
+    }
+
+    .green-own{
+        background-color: #95c11f;
+    }
+
+    .titulo-verde-own{
+        color: #044f17 !important;
+    }
+
+    .button-green-own{
+        background-color: #0B1D50;
+
+    }
+
+    .blanco{
+        color: white !important;
+
+    }
+    .title-rg-own{
+        font-weight: bolder !important;
+        color: #044f17 !important;
+    }
+
+</style>
+<script src="resources/js/functions.js"></script>
+<script>
+    main_route = '/usuario'
+</script>
+
+{%end%}
+{%block content%}
+
+
+{% if 'usuario_insert' in privileges or 'usuario_update' in privileges %}
+{% include form.html %}
+{% end %}
+
+<div class="header"><h2 class="title-rg-own">USUARIOS</h2></div>
+<div class="body">
+    <div class="row clearfix">
+        <div class="">
+        {% if 'usuario_insert' in privileges %}
+           <button id="new" type="button" class="btn bg-indigo waves-effect" title="Nuevo" style="margin: 30px;">
+                <i class="material-icons blanco">add</i>
+           </button>
+        {% end %}
+        </div>
+      <div id="rproc-loader" class="loader-wrapper" style="display: none">
+            <div class="loader loader-own">
+                <div class="preloader preloader-own">
+                    <div class="spinner-layer pl-teal">
+                        <div class="circle-clipper left"><div class="circle"></div></div>
+                        <div class="circle-clipper right"><div class="circle"></div></div>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center inf-own">Cargando...</p>
+        </div>
+
+        {% if 'usuario_query' in privileges %}
+    </div>
+    <div id="tabla" class="row">
+    <table id="data_table" class="table table-bordered table-striped table-hover dataTable" style="margin-bottom: 0px!important; ">
+                <thead>
+                    <tr>
+                        <th class="order_by_th" data-name="name" style="background-color: #F7AD0C">Id </th>
+                        <th class="order_by_th" data-name="name" style="background-color: #F7AD0C">Nombre </th>
+                        <th class="order_by_th" data-name="condominio" style="background-color: #F7AD0C">Rol </th>
+                        <th class="order_by_th" data-name="condominio" style="background-color: #F7AD0C">Cargo </th>
+                        <th class="order_by_th" data-name="usuarioname" style="background-color: #F7AD0C">Nombre de usuario </th>
+                        <th class="order_by_th" data-name="enabled" style="background-color: #F7AD0C">Estado </th>
+                        <th class="actions_header" style="background-color: #F7AD0C">Acciones </th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-mes">
+                </tbody>
+            </table>
+    </div>
+    {% else %}
+    <div class="col-xs-9 col-sm-10 col-md-10 col-lg-10"></div>
+    {% end %}
+</div>
+{%end%}
+{% block script %}
+<script src="resources/js/jquery.toast.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<script src="resources/plugins/jquery-validation/jquery.validate.js"></script>
+<script src="resources/plugins/jquery-validation/localization/messages_es.js"></script>
+<script src="resources/js/validations.js"></script>
+    <script>
+        $('#role_id').selectpicker({
+           size: 10,
+           liveSearch: true,
+           liveSearchPlaceholder: 'Buscar rol.',
+           title: 'Seleccione un rol.'
+       })
+
+        $('#sucursal_id').selectpicker({
+           size: 10,
+           liveSearch: true,
+           liveSearchPlaceholder: 'Buscar sucursal.',
+           title: 'Seleccione una sucursal.'
+    })
+
+        $(document).ready( function () {
+            debugger
+             let s =  "1"
+            cargar_tabla(s);
+
+    });
+
+
+     {% if 'usuario_insert' in privileges %}
+        $('#new').click(function () {
+            $('#id').val('')
+            $('#nombre').val('')
+            $('#apellidos').val('')
+            $('#correo').val('')
+            $('#usuario').val('')
+            $('#password').val('')
+            $('#descripcion').val('')
+            $('#role_id').val('')
+            $('#role_id').selectpicker('render')
+            $('#sucursal_id').val('')
+            $('#sucursal_id').selectpicker('render')
+
+            {#clean_form()#}
+            verif_inputs()
+            $('#id_div').hide()
+            $('#insert').show()
+            $('#pass').show()
+            $('#update').hide()
+            $('#form').modal('show')
+        })
+        $('#insert').on('click', function (e) {
+        $.Toast.showToast({title: 'Cargando...',duration: null, icon:'', image: ''});
+        if(!validationInputSelects("form")) {
+            objeto = JSON.stringify({
+                'nombre': $('#nombre').val(),
+                'apellidos': $('#apellidos').val(),
+                'correo': $('#correo').val(),
+                'usuario': $('#usuario').val(),
+                'password': $('#password').val(),
+                'descripcion': $('#descripcion').val(),
+                'fkrol': parseInt($('#role_id').val()),
+                'fksucursal': 1
+                });
+            ruta = "{{privileges['usuario_insert'].ruta}}";
+            $.ajax({
+                    url: ruta,
+                    type: "post",
+                    data: {_xsrf: getCookie("_xsrf"), object: objeto},
+                    async: true,
+                }).done(function (response) {
+                response=JSON.parse(response);
+                if ("message" in response && response.message != '') {
+                    if (response.success) {
+                        showMessage(response.message, "success", "ok")
+                        $('#form').modal('hide')
+                         $.Toast.hideToast();
+                        window.location = main_route
+                    } else {
+                        showMessage(response.message, "danger", "remove")
+                         $.Toast.hideToast();
+                    }
+                }
+            })
+
+         }else {
+            swal(
+                    'Error de datos.',
+                    'Hay campos vacios por favor verifique sus datos.',
+                    'error'
+            )
+        }
+        });
+    {% end %}
+
+    {% if 'usuario_update' in privileges %}
+        function edit(elemento) {
+            obj = JSON.stringify({
+            'id': parseInt(JSON.parse($(elemento).attr('data-json')))
+            })
+            ajax_call_get("{{privileges['usuario_update'].ruta}}",{
+                _xsrf: getCookie("_xsrf"),
+                object: obj
+            },function(response){
+                console.log(response)
+                var self = response;
+                $('#id').val(self.id)
+                $('#nombre').val(self.nombre)
+                $('#apellidos').val(self.apellidos)
+                $('#correo').val(self.correo)
+                $('#usuario').val(self.usuario)
+                $('#descripcion').val(self.descripcion)
+                $('#password').val(self.password)
+                $('#role_id').val(self.fkrol)
+                $('#role_id').selectpicker('render')
+                clean_form()
+            verif_inputs()
+            $('#id_div').hide()
+            $('#insert').hide()
+            $('#update').show()
+            $('#pass').hide()
+            $('#form').modal('show')
+            })
+    }
+
+    $('#update').on('click', function (e) {
+        debugger
+            objeto = JSON.stringify({
+                'id': parseInt($('#id').val()),
+                'nombre': $('#nombre').val(),
+                'apellidos': $('#apellidos').val(),
+                'correo': $('#correo').val(),
+                'usuario': $('#usuario').val(),
+                'descripcion': $('#descripcion').val(),
+                'fkrol': parseInt($('#role_id').val()),
+                'fksucursal': 1,
+            });
+            ruta = "{{privileges['usuario_update'].ruta}}";
+            $.ajax({
+                url: ruta,
+                type: "post",
+                data: {_xsrf: getCookie("_xsrf"), object: objeto},
+                async: true,
+            }).done(function (response) {
+                debugger
+                response=JSON.parse(response);
+                if ("message" in response && response.message != '') {
+                    if (response.success) {
+                        showMessage(response.message, "success", "ok")
+                        $('#form').modal('hide')
+                        window.location = main_route
+                    } else {
+                        showMessage(response.message, "danger", "remove")
+                    }
+                }
+                if (callback != null) {
+                    callback(response)
+                }
+            })
+
+        });
+
+        {% end %}
+
+         data_tables()
+    function data_tables(){
+
+    $("#data_table").DataTable({
+            language : {"url": "/resources/js/spanish.json"},
+                "pageLength": 100,
+            "order": [[ 0, "desc" ]],
+            "columnDefs": [
+                {
+                    "targets": [ 0 ],
+                    "visible": false,
+                    "searchable": false
+                }]
+        });
+    }
+
+     {% if 'usuario_delete' in privileges %}
+    function delet(e){
+
+        var verificar = false
+        idu = 0
+            id = parseInt(JSON.parse($(e).attr('data-id')))
+            cb_delete = this
+            b = $(this).prop('checked')
+            idu = $(this).prop('id')
+            if(!b){
+                cb_title = "¿Está seguro de que desea dar de baja al Usuario?"
+            } else {
+                cb_title ="¿Está seguro de que desea dar de alta al Usuario?"
+            }
+            swal({
+                text: cb_title,
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#004c99",
+                cancelButtonColor: "#F44336",
+                confirmButtonText: "Aceptar",
+                cancelButtonText: "Cancelar"
+            }).then(function () {
+                $.Toast.showToast({title: 'Cargando...',duration: null, icon:'', image: ''});
+                verificar = !$(cb_delete).is(':checked')
+                $(cb_delete).prop('checked', !$(cb_delete).is(':checked'))
+                if(b)
+                    var a = $(cb_delete).parent().prop('title', 'Activo')
+                else
+                    var a = $(cb_delete).parent().prop('title', 'Inhabilitado')
+
+                console.log(!$(cb_delete).is('checked'))
+                objeto =JSON.stringify({
+                   id: id,
+                   enabled: $(cb_delete).is(':checked'),
+                })
+                ajax_call(
+                    "{{privileges['usuario_delete'].ruta}}",
+                    {object: objeto,_xsrf: getCookie("_xsrf")},
+                    null,
+                    function (resp) {
+                        let self = JSON.parse(resp)
+                        if(self.success){
+                            $('#'+idu).prop('checked', verificar)
+                        }else{
+                            $('#'+idu).prop('checked', false)
+                            $('#'+idu).parent().prop('title', 'Inhabilitado')
+                        }
+                    }
+                )
+                $.Toast.hideToast();
+                window.location = main_route
+           })
+        }
+
+     function eliminar(elemento) {
+        debugger
+            swal({
+                text: "Desea eliminar este usuario",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#004c99",
+                cancelButtonColor: "#F44336",
+                confirmButtonText: "Aceptar",
+                cancelButtonText: "Cancelar"
+            }).then(function () {
+                $.Toast.showToast({title: 'Cargando...',duration: null, icon:'', image: ''});
+                objeto =JSON.stringify({
+                   id: JSON.parse($(elemento).attr('data-json')),
+                })
+                ajax_call(
+                    'usuario_eliminar',
+                    {object: objeto,_xsrf: getCookie("_xsrf")},
+                    null,
+                    function (resp) {
+                        let self = JSON.parse(resp);
+                        cargar_tabla(1);
+                        }
+                )
+                $.Toast.hideToast();
+
+           })
+        }
+        {% end %}
+
+
+        $('#modificar_password').on('shown.bs.modal', function () {
+            $('#new_pass').focus();
+        })
+
+        $('.reset').click(function () {
+            id = parseInt(JSON.parse($(this).attr('data-json')))
+            $('#new_pass').val('')
+            $('#new_rpass').val('')
+            $('#new_pass').parent().addClass('focused')
+            $('#new_rpass').parent().addClass('focused')
+            $('#actual_pass').focus()
+            $('#id_usuario').val(id)
+            $('#modificar_password').modal('show');
+        })
+
+    function Modificar_Contraseña(){
+            values="new_pass,new_rpass";
+            if(validate_inputs_empty(values)) {
+                swal({
+                        title: "Desea modificar la contraseña al usuario?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#4CAF50",
+                        cancelButtonColor: "#F44336",
+                        confirmButtonText: "Aceptar",
+                        cancelButtonText: "Cancelar"
+                    }).then(function () {
+                        id = $('#id_usuario').val()
+                        newp = $('#new_pass').val()
+                        newp1 = $('#new_rpass').val()
+                        objeto =JSON.stringify({'id' : id,'new_password' : newp, 'new_password_2':newp1})
+                        if(newp==newp1)
+                        {
+                            $.ajax({
+                                url: "/usuario_reset_password",
+                                type: "post",
+                                data: {object:objeto, _xsrf: getCookie("_xsrf")},
+                            }).done(function (response) {
+                                    valor=JSON.parse(response)
+                                    if(valor.success)
+                                    {
+                                        swal(
+                                            'Contraseña modificada.',
+                                            'Se modificó la contraseña correctamente.',
+                                            'success'
+                                          )
+                                    }
+                                    else
+                                    {
+                                        swal(
+                                            'Contraseña actual errónea.',
+                                            'No se modificó la contraseña.',
+                                            'error'
+                                          )
+                                    }
+                            })
+                        }
+                        else
+                        {
+                            swal(
+                                'Error de datos.',
+                                'Las contraseñas no coinciden.',
+                                'error'
+                              )
+                        }
+                })
+            }
+            else
+            {
+                swal(
+                      'Error de datos.',
+                      'Hay campos vacios por favor verifique sus datos.',
+                      'error'
+                    )
+            }
+        }
+
+        $('.reset1').click(function () {
+            id = parseInt(JSON.parse($(this).attr('data-json')))
+            swal({
+                title: "Desea anular el dispositivo y habilitar nuevamente al usuario?",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#673AB7",
+                cancelButtonColor: "#F44336",
+                confirmButtonText: "Aceptar",
+                cancelButtonText: "Cancelar"
+            }).then(function () {
+                ajax_call("/usuario_codigo_reset", { id,_xsrf: getCookie("_xsrf")}, null, function () {setTimeout(function(){window.location=main_route}, 2000);})
+            })
+        })
+
+    function cargar_tabla(sucursal){
+        $.Toast.showToast({title: 'Cargando track...',duration: null, icon:'', image: ''});
+        const tabla = document.getElementById("tabla");
+        tabla.style.display="none"
+        let body = JSON.stringify({
+            "sucursal_id": sucursal
+        });
+        dag = new FormData();
+        dag.append('object', body);
+        dag.append('_xsrf', getCookie("_xsrf"))
+          $.ajax({
+            url: "/usuario_listar_sucursal",
+            type: "post",
+            data: dag,
+            contentType: false,
+            processData: false,
+        }).done((response) => {
+             try {
+
+              $('#data_table').DataTable().destroy()
+                table.destroy()
+                 $('#data_table').empty();
+            }catch{
+                console.log("error")
+            }
+
+            //$('#tbody-mes').DataTable().destroy();
+            $('#tbody-mes').empty();
+            res = JSON.parse(response);
+
+            res.response.forEach(op => {
+                var  estado = 0
+                    if(op.enabled){
+                        estado ="checked"
+                    }
+
+                    $('#tbody-mes').append(`
+                        <tr>
+                            <th>`+op.id+`</th>
+                            <td >`+op.nombre+`</td>
+                            <td>`+op.rol+`</td>
+                            <td>`+op.descripcion+`</td>
+                            <td>`+op.usuario+`</td>
+                            <td align="center">
+                            {% if 'usuario_delete' in privileges %}
+                                    <input id=`+op.id+`  onClick="delet(this)" data-id=`+op.id+` type="checkbox" class="module chk-col-deep-purple"  `+estado+`  /> <label for=`+op.id+`></label>
+                                     <label for="`+op.id+`"></label>
+                            {% end %}
+                                </td>
+                            <td>
+                            <button id="edit" onClick="edit(this)" data-json=`+op.id+` type="button" class="btn bg-indigo waves-effect waves-light" title="Editar"><i class="material-icons blanco">create</i></button>
+                            <button id="eliminar" onClick="eliminar(this)" data-json=`+op.id+` type="button" class="btn bg-red" title="Eliminar"><i class="material-icons blanco">delete</i></button>
+                            </td>
+                       </tr>
+                    `)
+                })
+                data_tables()
+               tabla.style.display="block"
+              $.Toast.hideToast()
+          })
+    }
+
+    $('#sucursal_select').on('change', function() {
+        cargar_tabla($('#sucursal_select').val())
+
+    })
+
+    </script>
+
+{%end%}

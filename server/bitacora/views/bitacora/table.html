@@ -1,0 +1,12 @@
+
+{% for c in objects %}
+<tr>
+    <td>{{ c.id }}</td>
+    <td>{{ c.usuario}}</td>
+    <td>{{ c.accion }}</td>
+    <td>{{ c.fecha.strftime("%d/%m/%Y %H:%M:%S") }}</td>
+    <td>{{ c.identificador }}</td>
+</tr>
+{% end %}
+
+

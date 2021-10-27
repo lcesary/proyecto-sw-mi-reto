@@ -1,0 +1,19 @@
+Legend:
++ New
+* Changed
+! Fixed
+// Comment
+
+1.0.1 - 29 Nov 2017
+===============================
+! se fixeo las vistas parciales se adiciono el SocketController
+! se configuro las vistas
+* se cambio en renderizar las vistas
++ se adiciono jquery lightligery
++ se adiciono el statichandler
+
+1.0.2 - 1 Dic 2017
+===============================
+!se arreglo las peticiones de datos para editar no se muestra nada de datos sensibles en el Frontend
+!se arreglo peticiones get con query, tembien la parte del frontend
+!se arreglo el serializable

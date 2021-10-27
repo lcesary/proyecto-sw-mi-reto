@@ -1,0 +1,124 @@
+{%extends ../../../common/views/layout.html%}
+{%block style%}
+{% set user = usuario %}
+<style>
+    .accion{ cursor:pointer }
+
+    .titulo-verde-own{
+        color:  white  !important;
+    }
+
+    .green-own{
+        background-color: #95c11f !important;
+
+    }
+        .title-rg-own{
+        font-weight: bolder !important;
+        color: #044f17 !important;
+    }
+
+    .buttons-pdf {
+            background-color: #2962FF !important;
+            color: white !important;
+        }
+        .buttons-excel {
+            background-color: #4CAF50 !important;
+            color: white !important;
+        }
+</style>
+<script src="resources/js/functions.js"></script>
+<!--link href="resources/plugins/lastdatatables/datatables.min.css" rel="stylesheet" type="text/css" /-->
+<script>
+    main_route = '/bitacora'
+    function default_values() {
+        page_nr = 1
+        max_entries = 10
+        like_search = ""
+        order_by = ""
+        ascendant = true
+    }
+    default_values()
+</script>
+{%end%}
+{%block content%}
+
+<div class="header"><h2 class="title-rg-own">Bitácora</h2></div>
+<div class="body">
+    <div class="row clearfix">
+        <div class="col-xs-3 col-sm-2 col-md-2 col-lg-2">
+        </div>
+    </div>
+    <div class="row">
+        <div class="body table-responsive">
+    <table id="data_table" class="table table-bordered table-striped table-hover dataTable" style="margin-bottom: 0px!important; ">                <thead>
+                    <tr>
+                        <th class="order_by_th" data-name="names">Id </th>
+                        <th class="order_by_th" data-name="phone">Usuario </th>
+                        <th class="order_by_th" data-name="phone">Acción </th>
+                        <th class="order_by_th" data-name="phone">Fecha </th>
+                        <th class="order_by_th" data-name="phone">Identificador</th>
+                        <th class="order_by_th" data-name="phone">Identificadores</th>
+                    </tr>
+                </thead>
+               <tbody id="tbody-mes">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-xs-9 col-sm-10 col-md-10 col-lg-10"></div>
+</div>
+{%end%}
+{% block script %}
+<script src="resources/plugins/momentjs/moment.js"></script>
+<script src="resources/plugins/momentjs/locale/es.js"></script>
+<script src="resources/plugins/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
+<script>
+    $(document).ready( function () {
+        debugger
+        cargar_tabla()
+    });
+
+    function data_tables(){
+        $("#data_table").DataTable({
+            language : {"url": "/resources/js/spanish.json"},
+                "pageLength": 100,
+            "order": [[ 0, "desc" ]],
+            "columnDefs": [
+                {
+                    "targets": [ 0 ],
+                    "visible": false,
+                    "searchable": false
+                }]
+        });
+    }
+
+    function cargar_tabla(){
+             debugger
+        $.Toast.showToast({title: 'Cargando track...',duration: null, icon:'', image: ''});
+         try {
+             $('#data_table').DataTable().destroy()
+             table.destroy()
+             $('#data_table').empty();
+        }catch{
+            console.log("error")
+        }
+        //$('#tbody-mes').DataTable().destroy();
+        $('#tbody-mes').empty();
+        {% for c in objects %}
+            $('#tbody-mes').append(`
+                <tr>
+                    <th>{{ c.id }}</th>
+                    <td >{{ c.usuario }}</td>
+                    <td>{{ c.accion }}</td>
+                    <td >{{ c.fecha.strftime("%d/%m/%Y %H:%M:%S") }}</td>
+                    <td>{{ c.identificador }}</td>
+                    <td>{{ c.identificadores }}</td>
+               </tr>
+            `)
+{% end %}
+        data_tables()
+        $.Toast.hideToast()
+    }
+
+</script>
+{% end %}
