@@ -25,13 +25,12 @@ class UsuarioController(CrudController):
         '/usuario_update_password': {'POST': 'user_update_password'},
         '/usuario_reset_password': {'POST': 'usuario_reset_password'},
         '/usuario_codigo_reset': {'POST': 'usuario_codigo_reset'},
-        '/usuario_listar_sucursal': {'POST': 'usuario_listar_sucursal'},
+        '/usuario_listar': {'POST': 'usuario_listar'},
     }
 
     def get_extra_data(self):
         aux = super().get_extra_data()
         aux['roles'] = RolManager(self.db).get_all()
-        aux['sucursales'] = SucursalManager(self.db).listar(aux['usuario'])
         return aux
 
     @try_except_index
@@ -44,14 +43,11 @@ class UsuarioController(CrudController):
         self.render(self.html_index, **result)
 
     @try_except
-    def usuario_listar_sucursal(self):
+    def usuario_listar(self):
         data = json.loads(self.get_argument("object"))
         usuario = self.get_user()
-        if data['sucursal_id'] != "1":
-            lista = UsuarioManager(self.db).listar_usuario_sucursal(data['sucursal_id'])
-        else:
-            lista = UsuarioManager(self.db).list_all(usuario)
-            lista = lista['objects']
+        lista = UsuarioManager(self.db).list_all(usuario)
+        lista = lista['objects']
         lista = UsuarioManager(self.db).ordenar_usuario(lista)
         self.respond(response= lista, success=True, message='Insertado correctamente.')
 
@@ -336,3 +332,6 @@ class ApiUserController(ApiController):
 
     def check_xsrf_cookie(self):
         return
+
+    def update_token_usuario(self):
+        print("sadf")

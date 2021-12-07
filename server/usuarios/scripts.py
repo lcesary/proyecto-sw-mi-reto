@@ -3,7 +3,7 @@ def insertions():
 
     import hashlib
     from server.database.connection import transaction
-    from .models import Modulo, Usuario, Rol, Sucursal
+    from .models import Modulo, Usuario, Rol
 
 
     with transaction() as session:
@@ -27,16 +27,11 @@ def insertions():
         if bitacora_m is None:
             bitacora_m = Modulo(titulo='Bitacora', ruta='/bitacora', nombre='bitacora', icono='dvr')
 
-        track_m = session.query(Modulo).filter(Modulo.nombre == 'track').first()
-        if track_m is None:
-            track_m = Modulo(titulo='track', ruta='/track', nombre='track', icono='dvr')
-
 
         usuario_m.modulo.append(roles_m)
         usuario_m.modulo.append(usuarios_m)
         usuario_m.modulo.append(perfil_m)
         usuario_m.modulo.append(bitacora_m)
-        usuario_m.modulo.append(track_m)
 
         query_rol = session.query(Modulo).filter(Modulo.nombre == 'rol_query').first()
         if query_rol is None:
@@ -80,12 +75,6 @@ def insertions():
 
         bitacora_m.modulo.append(query_bitacora)
 
-        query_track = session.query(Modulo).filter(Modulo.nombre == 'track_query').first()
-        if query_track is None:
-            query_track = Modulo(titulo='Consular', ruta='', nombre='track_query', menu=False)
-
-        track_m.modulo.append(query_track)
-
         admin_role = session.query(Rol).filter(Rol.nombre == 'Administrador').first()
         if admin_role is None:
             admin_role = Rol(nombre='ADMINISTRADOR', descripcion='Todos los permisos')
@@ -96,7 +85,6 @@ def insertions():
         admin_role.modulos.append(roles_m)
         admin_role.modulos.append(usuarios_m)
         admin_role.modulos.append(perfil_m)
-        admin_role.modulos.append(track_m)
         admin_role.modulos.append(query_usuario)
         admin_role.modulos.append(insert_usuario)
         admin_role.modulos.append(update_usuario)
@@ -106,15 +94,11 @@ def insertions():
         admin_role.modulos.append(update_rol)
         admin_role.modulos.append(delete_rol)
         admin_role.modulos.append(query_bitacora)
-        admin_role.modulos.append(query_track)
-        for s in ["Todo","La Paz","Santa Cruz","Cochabamba","Sucre","Tarija","El Alto","Potosí","Trinidad","Oruro"]:
-            sucursal = Sucursal(nombre= s,enabled=True)
-            session.add(sucursal)
         super_user = session.query(Usuario).filter(Usuario.nombre == 'admin').first()
         if super_user is None:
             hex_dig = hashlib.sha512(b'admin').hexdigest()
             super_user = Usuario(nombre='Administrador', apellidos='principal', correo='admin@host.com', usuario='admin',
-                                 password=hex_dig,fksucursal=1)
+                                 password=hex_dig)
             super_user.rol = admin_role
 
         session.add(super_user)

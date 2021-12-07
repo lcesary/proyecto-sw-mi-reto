@@ -4,8 +4,6 @@ from sqlalchemy.orm.session import make_transient
 from ..database.connection import transaction
 from server.common.managers import SuperManager, Error
 from .models import *
-
-
 import string
 from random import *
 import random
@@ -47,20 +45,14 @@ class UsuarioManager(SuperManager):
         return self.db.query(Usuario).filter(Usuario.fksucursal == sucursal_id).filter(Rol.id != 1).all()
 
     def list_all(self, usuario):
-        if usuario.fksucursal == 1:
-            return dict(
-                objects=self.db.query(Usuario).filter(Usuario.fkrol == Rol.id).filter(Rol.id != 1).distinct().all())
-        else:
-            return dict(objects=self.db.query(Usuario).filter(Usuario.fkrol == Rol.id).filter(
-                Usuario.fksucursal == usuario.fksucursal).filter(Rol.id != 1).distinct().all())
+        return dict(objects=self.db.query(Usuario).filter(Usuario.fkrol == Rol.id).filter(Rol.id != 1).distinct().all())
+
 
     def ordenar_usuario(self,usuarios):
         lista = list()
         for usuario in usuarios:
             rol= usuario.rol.nombre
-            sucursal= usuario.sucursal.nombre
             usuario= usuario.get_dict()
-            usuario['sucursal']= sucursal
             usuario['rol']= rol
             lista.append(usuario)
         return lista
@@ -204,29 +196,8 @@ class UsuarioManager(SuperManager):
     def listar(self):
         return self.db.query(Usuario).filter(Usuario.enabled == True).filter(Rol.nombre != "ADMINISTRADOR").distinct()
 
-class SucursalManager(SuperManager):
-    def __init__(self, db):
-        super().__init__(Sucursal, db)
-
-    def listar(self,usuario):
-        if usuario.fksucursal == 1:
-            a =self.db.query(Sucursal).filter(Sucursal.enabled == True)
-        else:
-            a = self.db.query(Sucursal).filter(Sucursal.enabled == True).filter(Sucursal.id == usuario.fksucursal )
-        return a
-
-
-    def listar_id(self,id):
-        sucursal = self.db.query(Sucursal).filter(Sucursal.enabled == True).filter(Sucursal.id == id ).first()
-        return str(sucursal.nombre)
 
 #-----------------------------------------------------------------------------------------------------------------------
-
-
-
-
-    def list_all(self):
-        return dict(objects=self.db.query(Sucursal).distinct().all())
 
 class RolManager(SuperManager):
     def __init__(self, db):

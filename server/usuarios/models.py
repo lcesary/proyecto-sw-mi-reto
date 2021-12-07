@@ -8,7 +8,7 @@ from ..database.serializable import Serializable
 class Usuario(Serializable, Base):
     way = {'rol': {'modulos': {}}}
 
-    __tablename__ = 'USRMUSUARIO'
+    __tablename__ = 'usuario'
 
     id = Column('id', Integer, primary_key=True)
     nombre = Column('nombre', String(100), nullable=False)
@@ -16,14 +16,12 @@ class Usuario(Serializable, Base):
     correo = Column('correo', String(100), nullable=False)
     usuario = Column('usuario', String(50), nullable=False, unique=True)
     password = Column('password', String(150), nullable=False)
-    fkrol = Column('fkrol', Integer, ForeignKey('USRMROL.id'), nullable=False)
+    fkrol = Column('fkrol', Integer, ForeignKey('rol.id'), nullable=False)
     descripcion = Column('descripcion', String(200), nullable=True)
-    fksucursal = Column('fksucursal', Integer, ForeignKey('USRMSUCURSAL.id'), nullable=False)
     token = Column('token', String(2000), nullable=True, default='Sin Token')
     enabled = Column('enabled', Boolean, default=True)
 
     rol = relationship('Rol')
-    sucursal = relationship('Sucursal')
 
 
     def get_dict(self, way=None):
@@ -32,16 +30,16 @@ class Usuario(Serializable, Base):
         return dictionary
 
 
-Acceso = Table('USRDACCESO', Base.metadata,
+Acceso = Table('acceso', Base.metadata,
                Column('id', Integer, primary_key=True),
-               Column('fkrol', Integer, ForeignKey('USRMROL.id')),
-               Column('fkmodulo', Integer, ForeignKey('USRMMODULO.id')))
+               Column('fkrol', Integer, ForeignKey('rol.id')),
+               Column('fkmodulo', Integer, ForeignKey('modulo.id')))
 
 
 class Rol(Serializable, Base):
     way = {'usuario': {}, 'modulos': {}}
 
-    __tablename__ = 'USRMROL'
+    __tablename__ = 'rol'
 
     id = Column('id', Integer, primary_key=True)
     nombre = Column('nombre', String(50), nullable=False)
@@ -55,7 +53,7 @@ class Rol(Serializable, Base):
 class Modulo(Serializable, Base):
     way = {'roles': {}}
 
-    __tablename__ = 'USRMMODULO'
+    __tablename__ = 'modulo'
 
     id = Column('id', Integer, primary_key=True)
     ruta = Column('ruta', String(100))
@@ -63,17 +61,9 @@ class Modulo(Serializable, Base):
     nombre = Column('nombre', String(100), nullable=False, unique=True)
     icono = Column('icono', String(50), nullable=False, default='home')
     menu = Column('menu', Boolean, nullable=False, default=True)
-    fkmodulo = Column('fkmodulo', Integer, ForeignKey('USRMMODULO.id'))
+    fkmodulo = Column('fkmodulo', Integer, ForeignKey('modulo.id'))
 
     roles = relationship('Rol', secondary=Acceso)
     #children = relationship('Modulo')
     modulo = relationship('Modulo')
 
-class Sucursal(Serializable, Base):
-    way = {}
-
-    __tablename__ = 'USRMSUCURSAL'
-
-    id = Column('id', Integer, primary_key=True)
-    nombre = Column('nombre', String(100))
-    enabled = Column('enabled', Boolean, default=True)

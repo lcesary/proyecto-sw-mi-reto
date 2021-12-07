@@ -35,22 +35,22 @@
 </style>
 <script src="resources/js/functions.js"></script>
 <script>
-    main_route = '/usuario'
+    main_route = '/consejos'
 </script>
 
 {%end%}
 {%block content%}
 
 
-{% if 'usuario_insert' in privileges or 'usuario_update' in privileges %}
+{% if 'consejo_insert' in privileges or 'consejo_update' in privileges %}
 {% include form.html %}
 {% end %}
 
-<div class="header"><h2 class="title-rg-own">USUARIOS</h2></div>
+<div class="header"><h2 class="title-rg-own">CONSEJOS</h2></div>
 <div class="body">
     <div class="row clearfix">
         <div class="">
-        {% if 'usuario_insert' in privileges %}
+        {% if 'consejo_insert' in privileges %}
            <button id="new" type="button" class="btn bg-indigo waves-effect" title="Nuevo" style="margin: 30px;">
                 <i class="material-icons blanco">add</i>
            </button>
@@ -68,7 +68,7 @@
             <p class="text-center inf-own">Cargando...</p>
         </div>
 
-        {% if 'usuario_query' in privileges %}
+        {% if 'consejo_query' in privileges %}
     </div>
     <div id="tabla" class="row">
     <table id="data_table" class="table table-bordered table-striped table-hover dataTable" style="margin-bottom: 0px!important; ">
@@ -76,9 +76,7 @@
                     <tr>
                         <th class="order_by_th" data-name="name" style="background-color: #F7AD0C">Id </th>
                         <th class="order_by_th" data-name="name" style="background-color: #F7AD0C">Nombre </th>
-                        <th class="order_by_th" data-name="condominio" style="background-color: #F7AD0C">Rol </th>
-                        <th class="order_by_th" data-name="usuarioname" style="background-color: #F7AD0C">Nombre de usuario </th>
-                        <th class="order_by_th" data-name="enabled" style="background-color: #F7AD0C">Estado </th>
+                        <th class="order_by_th" data-name="name" style="background-color: #F7AD0C">Descripcion </th>
                         <th class="actions_header" style="background-color: #F7AD0C">Acciones </th>
                     </tr>
                 </thead>
@@ -99,29 +97,16 @@
 <script src="resources/plugins/jquery-validation/localization/messages_es.js"></script>
 <script src="resources/js/validations.js"></script>
     <script>
-        $('#role_id').selectpicker({
-           size: 10,
-           liveSearch: true,
-           liveSearchPlaceholder: 'Buscar rol.',
-           title: 'Seleccione un rol.'
-       })
-
         $(document).ready( function () {
             cargar_tabla();
-
     });
 
 
-     {% if 'usuario_insert' in privileges %}
+     {% if 'consejo_insert' in privileges %}
         $('#new').click(function () {
             $('#id').val('')
             $('#nombre').val('')
-            $('#apellidos').val('')
-            $('#correo').val('')
-            $('#usuario').val('')
-            $('#password').val('')
-            $('#role_id').val('')
-            $('#role_id').selectpicker('render')
+            $('#descripcion').val('')
 
             {#clean_form()#}
             verif_inputs()
@@ -136,13 +121,9 @@
         if(!validationInputSelects("form")) {
             objeto = JSON.stringify({
                 'nombre': $('#nombre').val(),
-                'apellidos': $('#apellidos').val(),
-                'correo': $('#correo').val(),
-                'usuario': $('#usuario').val(),
-                'password': $('#password').val(),
-                'fkrol': parseInt($('#role_id').val()),
+                'descripcion':$('#descripcion').val()
                 });
-            ruta = "{{privileges['usuario_insert'].ruta}}";
+            ruta = "{{privileges['consejo_insert'].ruta}}";
             $.ajax({
                     url: ruta,
                     type: "post",
@@ -173,12 +154,12 @@
         });
     {% end %}
 
-    {% if 'usuario_update' in privileges %}
+    {% if 'consejo_update' in privileges %}
         function edit(elemento) {
             obj = JSON.stringify({
             'id': parseInt(JSON.parse($(elemento).attr('data-json')))
             })
-            ajax_call_get("{{privileges['usuario_update'].ruta}}",{
+            ajax_call_get("{{privileges['consejo_update'].ruta}}",{
                 _xsrf: getCookie("_xsrf"),
                 object: obj
             },function(response){
@@ -186,12 +167,7 @@
                 var self = response;
                 $('#id').val(self.id)
                 $('#nombre').val(self.nombre)
-                $('#apellidos').val(self.apellidos)
-                $('#correo').val(self.correo)
-                $('#usuario').val(self.usuario)
-                $('#password').val(self.password)
-                $('#role_id').val(self.fkrol)
-                $('#role_id').selectpicker('render')
+                $('#descripcion').val(self.descripcion)
                 clean_form()
             verif_inputs()
             $('#id_div').hide()
@@ -203,16 +179,12 @@
     }
 
     $('#update').on('click', function (e) {
-        debugger
             objeto = JSON.stringify({
                 'id': parseInt($('#id').val()),
                 'nombre': $('#nombre').val(),
-                'apellidos': $('#apellidos').val(),
-                'correo': $('#correo').val(),
-                'usuario': $('#usuario').val(),
-                'fkrol': parseInt($('#role_id').val()),
+                'descripcion':$('#descripcion').val(),
             });
-            ruta = "{{privileges['usuario_update'].ruta}}";
+            ruta = "{{privileges['consejo_update'].ruta}}";
             $.ajax({
                 url: ruta,
                 type: "post",
@@ -254,7 +226,7 @@
         });
     }
 
-     {% if 'usuario_delete' in privileges %}
+     {% if 'consejo_delete' in privileges %}
     function delet(e){
 
         var verificar = false
@@ -291,7 +263,7 @@
                    enabled: $(cb_delete).is(':checked'),
                 })
                 ajax_call(
-                    "{{privileges['usuario_delete'].ruta}}",
+                    "{{privileges['consejo_delete'].ruta}}",
                     {object: objeto,_xsrf: getCookie("_xsrf")},
                     null,
                     function (resp) {
@@ -324,7 +296,7 @@
                    id: JSON.parse($(elemento).attr('data-json')),
                 })
                 ajax_call(
-                    'usuario_eliminar',
+                    'consejo_eliminar',
                     {object: objeto,_xsrf: getCookie("_xsrf")},
                     null,
                     function (resp) {
@@ -337,125 +309,28 @@
            })
         }
         {% end %}
-
-
-        $('#modificar_password').on('shown.bs.modal', function () {
-            $('#new_pass').focus();
-        })
-
-        $('.reset').click(function () {
-            id = parseInt(JSON.parse($(this).attr('data-json')))
-            $('#new_pass').val('')
-            $('#new_rpass').val('')
-            $('#new_pass').parent().addClass('focused')
-            $('#new_rpass').parent().addClass('focused')
-            $('#actual_pass').focus()
-            $('#id_usuario').val(id)
-            $('#modificar_password').modal('show');
-        })
-
-    function Modificar_Contraseña(){
-            values="new_pass,new_rpass";
-            if(validate_inputs_empty(values)) {
-                swal({
-                        title: "Desea modificar la contraseña al usuario?",
-                        type: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#4CAF50",
-                        cancelButtonColor: "#F44336",
-                        confirmButtonText: "Aceptar",
-                        cancelButtonText: "Cancelar"
-                    }).then(function () {
-                        id = $('#id_usuario').val()
-                        newp = $('#new_pass').val()
-                        newp1 = $('#new_rpass').val()
-                        objeto =JSON.stringify({'id' : id,'new_password' : newp, 'new_password_2':newp1})
-                        if(newp==newp1)
-                        {
-                            $.ajax({
-                                url: "/usuario_reset_password",
-                                type: "post",
-                                data: {object:objeto, _xsrf: getCookie("_xsrf")},
-                            }).done(function (response) {
-                                    valor=JSON.parse(response)
-                                    if(valor.success)
-                                    {
-                                        swal(
-                                            'Contraseña modificada.',
-                                            'Se modificó la contraseña correctamente.',
-                                            'success'
-                                          )
-                                    }
-                                    else
-                                    {
-                                        swal(
-                                            'Contraseña actual errónea.',
-                                            'No se modificó la contraseña.',
-                                            'error'
-                                          )
-                                    }
-                            })
-                        }
-                        else
-                        {
-                            swal(
-                                'Error de datos.',
-                                'Las contraseñas no coinciden.',
-                                'error'
-                              )
-                        }
-                })
-            }
-            else
-            {
-                swal(
-                      'Error de datos.',
-                      'Hay campos vacios por favor verifique sus datos.',
-                      'error'
-                    )
-            }
-        }
-
-        $('.reset1').click(function () {
-            id = parseInt(JSON.parse($(this).attr('data-json')))
-            swal({
-                title: "Desea anular el dispositivo y habilitar nuevamente al usuario?",
-                type: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#673AB7",
-                cancelButtonColor: "#F44336",
-                confirmButtonText: "Aceptar",
-                cancelButtonText: "Cancelar"
-            }).then(function () {
-                ajax_call("/usuario_codigo_reset", { id,_xsrf: getCookie("_xsrf")}, null, function () {setTimeout(function(){window.location=main_route}, 2000);})
-            })
-        })
-
     function cargar_tabla(){
         $.Toast.showToast({title: 'Cargando track...',duration: null, icon:'', image: ''});
         const tabla = document.getElementById("tabla");
-        tabla.style.display="none"
         let body = JSON.stringify({
         });
         dag = new FormData();
         dag.append('object', body);
         dag.append('_xsrf', getCookie("_xsrf"))
           $.ajax({
-            url: "/usuario_listar",
+            url: "/consejo_listar",
             type: "post",
             data: dag,
             contentType: false,
             processData: false,
         }).done((response) => {
-             try {
-
+           try {
               $('#data_table').DataTable().destroy()
                 table.destroy()
                  $('#data_table').empty();
             }catch{
                 console.log("error")
             }
-
             //$('#tbody-mes').DataTable().destroy();
             $('#tbody-mes').empty();
             res = JSON.parse(response);
@@ -470,14 +345,7 @@
                         <tr>
                             <th>`+op.id+`</th>
                             <td >`+op.nombre+`</td>
-                            <td>`+op.rol+`</td>
-                            <td>`+op.usuario+`</td>
-                            <td align="center">
-                            {% if 'usuario_delete' in privileges %}
-                                    <input id=`+op.id+`  onClick="delet(this)" data-id=`+op.id+` type="checkbox" class="module chk-col-deep-purple"  `+estado+`  /> <label for=`+op.id+`></label>
-                                     <label for="`+op.id+`"></label>
-                            {% end %}
-                                </td>
+                            <td >`+op.descripcion+`</td>
                             <td>
                             <button id="edit" onClick="edit(this)" data-json=`+op.id+` type="button" class="btn bg-indigo waves-effect waves-light" title="Editar"><i class="material-icons blanco">create</i></button>
                             <button id="eliminar" onClick="eliminar(this)" data-json=`+op.id+` type="button" class="btn bg-red" title="Eliminar"><i class="material-icons blanco">delete</i></button>
@@ -486,7 +354,6 @@
                     `)
                 })
                 data_tables()
-               tabla.style.display="block"
               $.Toast.hideToast()
           })
     }

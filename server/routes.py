@@ -1,6 +1,6 @@
 ﻿import os
 from .usuarios.controllers import *
-from .track.controllers import *
+from .consejo.controllers import ConsejoController,AlimentoController
 from .main.controllers import Index
 from tornado.web import StaticFileHandler
 
@@ -20,9 +20,8 @@ def get_handlers():
     # Usuario
     handlers.extend(get_routes(UsuarioController))
     handlers.extend(get_routes(RolController))
-    handlers.extend(get_routes(TrackController))
-    handlers.extend(get_routes(ApiAppController))
-    handlers.extend(get_routes(HistorialController))
+    handlers.extend(get_routes(ConsejoController))
+    handlers.extend(get_routes(AlimentoController))
     handlers.extend(get_routes(BitacoraController))
 
 

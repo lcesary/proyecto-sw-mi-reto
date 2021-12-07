@@ -13,10 +13,10 @@ fecha_zona = datetime.now(pytz.timezone('America/La_Paz'))
 class Bitacora(Serializable, Base):
     way = {'usuario': {}}
 
-    __tablename__ = 'USRMBITACORA'
+    __tablename__ = 'bitacora'
 
     id = Column('id', BigInteger, primary_key=True)
-    fkusuario = Column('fkusuario', Integer, ForeignKey('USRMUSUARIO.id'), nullable=True)
+    fkusuario = Column('fkusuario', Integer, ForeignKey('usuario.id'), nullable=True)
     ip = Column('ip', String(100), nullable=True)
     accion = Column('accion', String(200), nullable=True)
     usuario = Column('usuario', String(200), nullable=True)
