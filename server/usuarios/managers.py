@@ -14,6 +14,11 @@ class UsuarioManager(SuperManager):
     def __init__(self, db):
         super().__init__(Usuario, db)
 
+    def validar_usuario(self, username, password):
+        password = hashlib.sha512(password.encode()).hexdigest()
+        return self.db.query(func.count(Usuario.id)).filter(Usuario.usuario == username).filter(
+            Usuario.enabled == True).filter(Usuario.password == password).scalar()
+
     def get_privileges(self, id, route):
         parent_module = self.db.query(Modulo).\
             join(Rol.modulos).join(Usuario).\
@@ -41,9 +46,6 @@ class UsuarioManager(SuperManager):
         usuario= self.db.query(Usuario).filter(Usuario.id == id ).first()
         return usuario
 
-    def listar_usuario_sucursal(self,sucursal_id):
-        return self.db.query(Usuario).filter(Usuario.fksucursal == sucursal_id).filter(Rol.id != 1).all()
-
     def list_all(self, usuario):
         return dict(objects=self.db.query(Usuario).filter(Usuario.fkrol == Rol.id).filter(Rol.id != 1).distinct().all())
 
@@ -68,6 +70,15 @@ class UsuarioManager(SuperManager):
             fecha = BitacoraManager(self.db).fecha_actual()
             b = Bitacora(fkusuario=Usuario.user_id,  accion="Se registró un usuario.", fecha=fecha, tabla='USRMUSUARIO',usuario=usuarios.nombre +" "+ usuarios.apellidos,identificador=u.id,identificadores=u.nombre+" "+u.apellidos)
             super().insert(b)
+            return u
+        return Error('unknown')
+
+    def insertar(self, Usuario):
+        if Usuario.fkrol > 0:
+            Usuario.password = hashlib.sha512(Usuario.password.encode()).hexdigest()
+            codigo = self.get_random_string()
+            Usuario.codigo = codigo
+            u = super().insert(Usuario)
             return u
         return Error('unknown')
 
